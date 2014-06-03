@@ -1,0 +1,37 @@
+﻿            List<string> filenamesToCopy = GetAllFilenamesToCopy();
+
+            var cancelRemainingTasks = new CancellationTokenSource();
+
+            List<Task<string>> copyTasks =
+                (from filename in filenamesToCopy
+                 select CopyFileAsync(filename,
+                                      Path.Combine(AudioTempFolder.Text, Path.GetFileName(filename)),
+                                      null, null, false,
+                                      cancelRemainingTasks.Token)
+                ).ToList();
+
+            string fileWithMD5HashFailure = String.Empty;
+            while (copyTasks.Count > 0)
+            {
+                Task<string> copyTask = await Task.WhenAny(copyTasks);
+                copyTasks.Remove(copyTask);
+
+                if (Path.GetExtension(copyTask.Result) == ".m4a")
+                {
+                    bool isMD5HashValid = ValidateMD5(copyTask.Result, copyTask.Result + ".md5");
+                    string message = isMD5HashValid ? "MD5 valid : {0}" : "*** MD5 INVALID *** : {0}";
+                    UpdateConsole(WhenAnyEarlyBailoutConsole, message, Path.GetFileName(copyTask.Result));
+                    if (!isMD5HashValid)
+                    {
+                        cancelRemainingTasks.Cancel();
+                        fileWithMD5HashFailure = copyTask.Result;
+                        message = isMD5HashValid ? "MD5 valid : {0}" : "*** MD5 INVALID *** : {0}";
+                        break;
+                    }
+                }
+            }
+
+            if (fileWithMD5HashFailure != String.Empty)
+            {
+                PlayAudiotrack(fileWithMD5HashFailure, Path.Combine(AudioTempFolder.Text, @"Silents - Demo - cover.png"));
+            }

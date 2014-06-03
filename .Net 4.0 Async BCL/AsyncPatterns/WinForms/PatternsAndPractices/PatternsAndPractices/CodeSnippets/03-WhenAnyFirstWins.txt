@@ -1,0 +1,67 @@
+﻿STEP 1 of 2
+
+            Task<string> copyFileFlac = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"Flac\Silents - Demo - 03 The Stones and The Sea.flac"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.flac"), 
+                ProgressDetails1, ProgressBar1, false);
+
+            Task<string> copyFileMP3 = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"MP3\Silents - Demo - 03 The Stones and The Sea.mp3"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.mp3"),
+                ProgressDetails2, ProgressBar2, false);
+
+            Task<string> copyFileOgg = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"Ogg Vorbis\Silents - Demo - 03 The Stones and The Sea.ogg"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.ogg"),
+                ProgressDetails3, ProgressBar3, false);
+
+            Task<string> copyFileAAC = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"AAC\Silents - Demo - 03 The Stones and The Sea.m4a"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.m4a"),
+                ProgressDetails4, ProgressBar4, false);
+
+            List<Task<string>> copyTasks = new List<Task<string>>() { copyFileAAC, copyFileMP3, copyFileFlac, copyFileOgg };
+
+            var firstCopyTask = await Task.WhenAny(copyTasks);
+
+            PlayAudioTrack(firstCopyTask.Result, Path.Combine(AudioSourceFolder.Text, @"AAC\Silents - Demo - cover.png"));
+
+
+
+
+
+
+
+
+
+
+STEP 2 of 2
+
+            var cancelRemainingTasks = new CancellationTokenSource();
+
+            Task<string> copyFileFlac = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"Flac\Silents - Demo - 03 The Stones and The Sea.flac"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.flac"), 
+                ProgressDetails1, ProgressBar1, false, cancelRemainingTasks.Token);
+
+            Task<string> copyFileMP3 = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"MP3\Silents - Demo - 03 The Stones and The Sea.mp3"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.mp3"),
+                ProgressDetails2, ProgressBar2, false, cancelRemainingTasks.Token);
+
+            Task<string> copyFileOgg = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"Ogg Vorbis\Silents - Demo - 03 The Stones and The Sea.ogg"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.ogg"),
+                ProgressDetails3, ProgressBar3, false, cancelRemainingTasks.Token);
+
+            Task<string> copyFileAAC = CopyFileAsync(
+                Path.Combine(AudioSourceFolder.Text, @"AAC\Silents - Demo - 03 The Stones and The Sea.m4a"),
+                Path.Combine(AudioTempFolder.Text, @"Silents - Demo - 03 The Stones and The Sea.m4a"),
+                ProgressDetails4, ProgressBar4, false, cancelRemainingTasks.Token);
+
+            List<Task<string>> copyTasks = new List<Task<string>>() { copyFileAAC, copyFileMP3, copyFileFlac, copyFileOgg };
+
+            var firstCopyTask = await Task.WhenAny(copyTasks);
+            cancelRemainingTasks.Cancel();
+
+            PlayAudioTrack(firstCopyTask.Result, Path.Combine(AudioSourceFolder.Text, @"AAC\Silents - Demo - cover.png"));

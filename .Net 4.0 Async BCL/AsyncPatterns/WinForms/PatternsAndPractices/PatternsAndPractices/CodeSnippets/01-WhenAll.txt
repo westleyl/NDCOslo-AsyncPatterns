@@ -1,0 +1,16 @@
+﻿
+            // setup all file copies
+            List<string> filenamesToCopy = GetAllFilenamesToCopy();
+            List<Task<string>> copyTasks = new List<Task<string>>();
+            for (int nextIndex = 0; nextIndex < filenamesToCopy.Count; nextIndex++)
+            {
+                copyTasks.Add(CopyFileAsync(filenamesToCopy[nextIndex],
+                                            Path.Combine(AudioTempFolder.Text, Path.GetFileName(filenamesToCopy[nextIndex])),
+                                            null, null, true));
+            }
+
+            // Note - leave out call to WhenAll and track won't play - it hasn't copied yet!
+            string[] filesCopied = await Task.WhenAll(copyTasks);
+
+            // Play first MP3 file copied
+            PlayAudioTrack(filesCopied.First(name => name.EndsWith(".mp3")), Path.Combine(AudioTempFolder.Text, @"Silents - Demo - cover.png"));

@@ -1,0 +1,46 @@
+﻿
+            // sort by filename, excluding the filepath
+            List<String> filenamesToCopy = GetAllFilenamesToCopy();          
+            filenamesToCopy.Sort((x, y) => String.Compare(Path.GetFileName(x), Path.GetFileName(y)));
+
+            // maximum 4 copies at any time
+            const int CONCURRENCY_LEVEL = 4;
+
+            // setup initial tasks (we may have less than concurrency level, so we can't use a for ... loop)
+            int nextIndex = 0;
+            List<Task<string>> copyTasks = new List<Task<string>>();
+            while (nextIndex < CONCURRENCY_LEVEL && nextIndex < filenamesToCopy.Count)
+            {
+                copyTasks.Add(CopyFileAsync(filenamesToCopy[nextIndex],
+                                            Path.Combine(AudioTempFolder.Text, Path.GetFileName(filenamesToCopy[nextIndex])),
+                                            GetThrottledFilenameLabel(nextIndex),
+                                            GetThrottledProgressBar(nextIndex), 
+                                            true));
+                nextIndex++;
+            }
+
+            // now start monitoring those tasks with WhenAny, adding a new task every time a running task completes
+            string lastFlacFilenameCopied = String.Empty;
+            while (copyTasks.Count > 0)
+            {
+                Task<string> copyTask = await Task.WhenAny(copyTasks);
+                if (copyTask.IsCompleted)
+                {
+                    copyTasks.Remove(copyTask);
+                    if (nextIndex < filenamesToCopy.Count)
+                    {
+                        copyTasks.Add(CopyFileAsync(filenamesToCopy[nextIndex],
+                                                    Path.Combine(AudioTempFolder.Text,
+                                                                 Path.GetFileName(filenamesToCopy[nextIndex])),
+                                                    GetThrottledFilenameLabel(nextIndex),
+                                                    GetThrottledProgressBar(nextIndex),
+                                                    true));
+                        if (Path.GetExtension(filenamesToCopy[nextIndex]) == ".flac")
+                            lastFlacFilenameCopied = Path.Combine(AudioTempFolder.Text,
+                                                                  Path.GetFileName(filenamesToCopy[nextIndex]));
+                        nextIndex++;
+                    }
+                }
+            }
+
+            PlayAudioTrack(lastFlacFilenameCopied, Path.Combine(AudioTempFolder.Text, @"Silents - Demo - cover.png"));

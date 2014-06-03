@@ -1,0 +1,70 @@
+﻿STEP 1 of 2
+
+        private async Task<System.String> CopyFileAsync(string sourceFilepath,
+            string destFilepath,
+            Label progDetails,
+            ProgressBar progBar,
+            bool pauseOnCompleteToShowFullProgressBar)
+        {
+            if (pauseOnCompleteToShowFullProgressBar) await Task.Delay(1000);
+
+            UpdateProgess(progBar, 0, progDetails, "");
+            using (FileStream sourceStream = File.Open(sourceFilepath, FileMode.Open))
+            {
+                using (FileStream destinationStream = File.Create(destFilepath + ".tmp"))
+                {
+                    UpdateProgess(progBar, 50, progDetails, "Copying " + Path.GetExtension(sourceFilepath));
+                    UpdateConsole(Console, "Copying started : {0} ", Path.GetFileName(sourceFilepath));
+
+                    await sourceStream.CopyToAsync(destinationStream, 4096);
+                }
+            }
+            UpdateProgess(progBar, 100, progDetails, "Copy " + Path.GetExtension(sourceFilepath) + " complete.");
+            UpdateConsole(Console, "Copy completed : {0} ", Path.GetFileName(sourceFilepath));
+
+            File.Move(destFilepath + ".tmp", destFilepath);
+            return destFilepath;
+        }
+
+
+
+STEP 2 of 2
+
+        // Version with Cancellation support 
+
+        private async Task<System.String> CopyFileAsync(string sourceFilepath, 
+            string destFilepath,
+            Label progDetails, 
+            ProgressBar progBar,
+            bool pauseOnCompleteToShowFullProgressBar,
+            CancellationToken cancellationToken)
+        {
+            if (pauseOnCompleteToShowFullProgressBar) await Task.Delay(1000);
+            try
+            {
+                UpdateProgess(progBar, 0, progDetails, "");
+                using (FileStream sourceStream = File.Open(sourceFilepath, FileMode.Open))
+                {
+                    using (FileStream destinationStream = File.Create(destFilepath + ".tmp"))
+                    {
+                        UpdateProgess(progBar, 50, progDetails, "Copying " + Path.GetExtension(sourceFilepath));
+                        UpdateConsole(Console, "Copying started : {0} ", Path.GetFileName(sourceFilepath));
+                
+                        await sourceStream.CopyToAsync(destinationStream, 4096, cancellationToken);
+                    }
+                }
+                UpdateProgess(progBar, 100, progDetails, "Copy " + Path.GetExtension(sourceFilepath) + " complete.");
+                UpdateConsole(Console, "Copy completed : {0} ", Path.GetFileName(sourceFilepath));
+
+                File.Move(destFilepath + ".tmp", destFilepath);
+                return destFilepath;
+            }
+            catch (OperationCanceledException)
+            {
+                UpdateProgess(progBar, 00, progDetails, "Copy " + Path.GetExtension(sourceFilepath) + " cancelled.");
+                UpdateConsole(Console, "Copying cancelled : {0} ", Path.GetFileName(sourceFilepath));
+
+                if (File.Exists(destFilepath + ".tmp")) File.Delete(destFilepath + ".tmp");
+                return null;
+            }
+        }
