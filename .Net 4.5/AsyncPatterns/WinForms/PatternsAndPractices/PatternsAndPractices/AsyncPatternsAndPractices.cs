@@ -22,30 +22,52 @@ namespace PatternsAndPractices
             AudioTempFolder.Text = tempAudioFolder;
 
             DeleteAllFilesFromFolder(AudioTempFolder.Text);
+
+
         }
 
         private async void WhenAll_Click(object sender, EventArgs e)
         {
+            // clear down previous run
+            DeleteAllFilesFromFolder(AudioTempFolder.Text);
+            ClearConsole(this.Console);
+            ClearNowPlaying();
 
         }
 
         private async void WhenAnyThrottled_Click(object sender, EventArgs e)
         {
+            // clear down previous run
+            DeleteAllFilesFromFolder(AudioTempFolder.Text);
+            ClearConsole(this.Console);
+            ClearNowPlaying();
 
         }
 
         private async void WhenAnyFirstWins_Click(object sender, EventArgs e)
         {
+            // clear down previous run
+            DeleteAllFilesFromFolder(AudioTempFolder.Text);
+            ClearConsole(this.Console);
+            ClearNowPlaying();
 
         }
 
         private async void WhenAnyInterleaved_Click(object sender, EventArgs e)
         {
+            // clear down previous run
+            DeleteAllFilesFromFolder(AudioTempFolder.Text);
+            ClearConsole(this.Console);
+            ClearNowPlaying();
 
         }
 
         private async void WhenAnyEarlyBailout_Click(object sender, EventArgs e)
         {
+            // clear down previous run
+            DeleteAllFilesFromFolder(AudioTempFolder.Text);
+            ClearConsole(this.Console);
+            ClearNowPlaying();
 
         }
 
